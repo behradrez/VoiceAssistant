@@ -40,7 +40,7 @@ class LocalVoiceAssistant:
         self.silence_timeout = silence_timeout
         self.max_command_seconds = max_command_seconds
         self.activation_terms = [
-            normalize_text(term) for term in (activation_terms or ["listen bot"])
+            normalize_text(term) for term in (activation_terms or ["hey listen"])
         ]
 
         self.audio_queue: queue.Queue[bytes] = queue.Queue()
@@ -105,10 +105,14 @@ class LocalVoiceAssistant:
                     if wake_rec.AcceptWaveform(data):
                         payload = json.loads(wake_rec.Result())
                         observed_text = payload.get("text", "")
+                        if observed_text:
+                            print(f"[Observed] {observed_text}", flush=True)
                     else:
                         payload = json.loads(wake_rec.PartialResult())
                         observed_text = payload.get("partial", "")
-
+                        if observed_text:
+                            print(f"[Partial Observed] {observed_text}", flush=True)
+                        
                     term, tail = self._detect_activation(observed_text)
                     if term:
                         activated = True
